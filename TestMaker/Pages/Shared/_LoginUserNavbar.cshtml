@@ -1,0 +1,17 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<ul class="navbar-nav">
+	@if (SignInManager.IsSignedIn(User))
+	{
+		<li class="nav-item">
+			<a class="nav-link text-dark" asp-area="" asp-page="/Index">View Surveys</a>
+		</li>
+
+		<li class="nav-item">
+			<a class="nav-link text-dark" asp-area="" asp-page="/Index">Create Surveys</a>
+		</li>
+	}
+
+	</ul>
