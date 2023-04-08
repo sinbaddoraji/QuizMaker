@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using TestMaker.Models;
 
 namespace TestMaker.Data
 {
@@ -9,5 +10,6 @@ namespace TestMaker.Data
 			: base(options)
 		{
 		}
+		public DbSet<TestMaker.Models.Survey>? Survey { get; set; }
 	}
 }
