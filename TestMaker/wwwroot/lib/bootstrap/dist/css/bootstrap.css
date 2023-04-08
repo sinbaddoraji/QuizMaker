@@ -3402,6 +3402,7 @@ textarea.form-control-lg {
   background-color: transparent;
 }
 
+
 .btn-link {
   font-weight: 400;
   color: #0d6efd;
@@ -3930,11 +3931,11 @@ textarea.form-control-lg {
   border: 0;
   border-radius: 0.25rem;
 }
-.nav-pills .nav-link.active,
-.nav-pills .show > .nav-link {
-  color: #fff;
-  background-color: #0d6efd;
-}
+    .nav-pills .nav-link.active,
+    .nav-pills .show > .nav-link {
+        color: #fff;
+        background-color: #00A8E8;
+    }
 
 .nav-fill > .nav-link,
 .nav-fill .nav-item {
