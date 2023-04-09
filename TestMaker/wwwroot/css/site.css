@@ -8,6 +8,7 @@ html {
     position: relative;
     min-height: 100%;
     font-size: 14px;
+    font-weight: 400;
 }
 
 body {
@@ -53,13 +54,11 @@ body {
     max-width: 800px;
 }
 
-.card h1 {
+a {
     color: #00A8E8;
-    margin-bottom: 1rem;
-    text-align: center;
 }
 
-h3 {
+h1, h2, h3 {
     color: #00A8E8;
     margin-bottom: 1rem;
     text-align: center;
@@ -76,6 +75,35 @@ h3 {
     color: white;
     background-color: #00A8E8;
     border-color: #00A8E8;
+}
+
+.table-add-btn {
+    margin: 5px;
+}
+
+
+.table-parent {
+    background-color: whitesmoke;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 2%;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    min-height: 300px;
+}
+
+
+table {
+    background-color: whitesmoke;
+   
+    padding: 10%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: justify-all;
+}
+
+thead th {
+    color: #00A8E8;
 }
 
 .feature-item {
@@ -103,4 +131,10 @@ h3 {
 .nav-pills .show > .nav-link {
     color: #fff;
     background-color: #00A8E8;
+}
+
+.survey-questions {
+    border: 1px solid #00A8E8;
+    min-height: 300px;
+    margin: 20px 0;
 }

@@ -35,14 +35,25 @@ namespace TestMaker.Pages.Survey
             {
                 return NotFound();
             }
-            Survey = survey;
+
+            _context.Attach(survey);
+			Survey = survey;
+
+            
+
             return Page();
         }
 
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see https://aka.ms/RazorPagesCRUD.
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(string action)
         {
+	        if (!string.IsNullOrEmpty(action))
+	        {
+		       HandleAction(action);
+                return Page();
+	        }
+
             if (!ModelState.IsValid)
             {
                 return Page();
@@ -68,6 +79,36 @@ namespace TestMaker.Pages.Survey
 
             return RedirectToPage("./Index");
         }
+
+        private void HandleAction(string action)
+        {
+	        if (string.IsNullOrEmpty(Survey.UserId))
+	        {
+                Survey.UserId = User.Identity.Name;
+	        }
+
+	        if (action.Equals("Add Question"))
+	        {
+		        AddQuestion();
+			}
+        }
+
+        private void AddQuestion()
+        {
+			//Survey.Questions ??= new List<Question>();
+			Survey.Questions.Add(new Question()
+			{
+				Content = "Random Question?",
+                Choices =
+                {
+					new QuestionChoice() {Content = "Choice 1"},
+					new QuestionChoice() {Content = "Choice 2"},
+					new QuestionChoice() {Content = "Choice 3"},
+					new QuestionChoice() {Content = "Choice 4"},
+				},
+                CorrectAnswerIndex = "1"
+			});
+		}
 
         private bool SurveyExists(Guid id)
         {

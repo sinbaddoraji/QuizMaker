@@ -2,7 +2,7 @@
 
 public class QuestionChoice
 {
-    public Guid QuestionChoiceId { get; set; }
+    public Guid QuestionChoiceId { get; set; } = Guid.NewGuid();
 
-    public string Content { get; set; }
+    public string? Content { get; set; }
 }

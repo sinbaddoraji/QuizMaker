@@ -5,35 +5,57 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+<div class="table-parent">
+	
+	<h1>Edit Survey</h1>
+	<hr />
 
-<h4>Survey</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Survey.SurveyId" />
-            <div class="form-group">
-                <label asp-for="Survey.Name" class="control-label"></label>
-                <input asp-for="Survey.Name" class="form-control" />
-                <span asp-validation-for="Survey.Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Survey.Description" class="control-label"></label>
-                <input asp-for="Survey.Description" class="form-control" />
-                <span asp-validation-for="Survey.Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
+	<form method="post">
+		<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+		<input type="hidden" asp-for="Survey.SurveyId"/>
+		<div class="form-group">
+			<label asp-for="Survey.Name" class="control-label"></label>
+			<input asp-for="Survey.Name" class="form-control"/>
+			<span asp-validation-for="Survey.Name" class="text-danger"></span>
+		</div>
+		<div class="form-group">
+			<label asp-for="Survey.Description" class="control-label"></label>
+			<input asp-for="Survey.Description" class="form-control"/>
+			<span asp-validation-for="Survey.Description" class="text-danger"></span>
+		</div>
+		<div class="survey-questions">
+			<label>Questions</label>
+			<div>
+				@foreach (var question in Model.Survey.Questions)
+				{
+					<label>Question Content:</label>
+					<input asp-for="@question.Content"></input>
+
+					<div class="d-inline-flex">
+						@foreach (var answer in question.Choices)
+						{
+							<div>
+								<label>Option:</label>
+								<input asp-for="@answer.Content"></input>
+							</div>
+						}
+					</div>
+				}
+				<button class="btn theme-btn mb-3" name="action" value="Add Question">Add Question</button>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<input type="submit" value="Save" class="w-100 btn theme-btn"/>
+		</div>
+	</form>
+	
+	<div>
+		<a asp-page="./Index">Back to List</a>
+	</div>
 </div>
 
-<div>
-    <a asp-page="./Index">Back to List</a>
-</div>
+
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

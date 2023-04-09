@@ -24,18 +24,23 @@ namespace TestMaker.Pages.Survey
             return Page();
         }
 
-        [BindProperty]
-        public Models.Survey Survey { get; set; } = default!;
+        public IActionResult AddQuestion()
+        {
+	        Survey.Questions ??= new List<Question>();
+	        Survey.Questions.Add(new Question());
+
+	        return Page();
+        }
+        
+
+		[BindProperty]
+        public Models.Survey Survey { get; set; } = new Models.Survey();
         
 
         // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(string? username)
         {
-          if (!ModelState.IsValid || _context.Survey == null || Survey == null)
-            {
-                return Page();
-            }
-
+            Survey.UserId = User.Identity.Name;
             _context.Survey.Add(Survey);
             await _context.SaveChangesAsync();
 
