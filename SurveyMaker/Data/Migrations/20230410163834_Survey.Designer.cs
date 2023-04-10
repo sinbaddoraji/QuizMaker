@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SurveyMaker.Data;
 
@@ -11,9 +12,10 @@ using SurveyMaker.Data;
 namespace SurveyMaker.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230410163834_Survey")]
+    partial class Survey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -224,6 +226,47 @@ namespace SurveyMaker.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("TestMaker.Models.Question", b =>
+                {
+                    b.Property<Guid>("QuestionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CorrectAnswerIndex")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("SurveyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("QuestionId");
+
+                    b.HasIndex("SurveyId");
+
+                    b.ToTable("Question");
+                });
+
+            modelBuilder.Entity("TestMaker.Models.QuestionChoice", b =>
+                {
+                    b.Property<Guid>("QuestionChoiceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("QuestionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("QuestionChoiceId");
+
+                    b.HasIndex("QuestionId");
+
+                    b.ToTable("QuestionChoice");
+                });
+
             modelBuilder.Entity("TestMaker.Models.Survey", b =>
                 {
                     b.Property<Guid>("SurveyId")
@@ -239,8 +282,8 @@ namespace SurveyMaker.Data.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Questions")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<byte[]>("Timestamp")
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(max)");
@@ -299,6 +342,30 @@ namespace SurveyMaker.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("TestMaker.Models.Question", b =>
+                {
+                    b.HasOne("TestMaker.Models.Survey", null)
+                        .WithMany("Questions")
+                        .HasForeignKey("SurveyId");
+                });
+
+            modelBuilder.Entity("TestMaker.Models.QuestionChoice", b =>
+                {
+                    b.HasOne("TestMaker.Models.Question", null)
+                        .WithMany("Choices")
+                        .HasForeignKey("QuestionId");
+                });
+
+            modelBuilder.Entity("TestMaker.Models.Question", b =>
+                {
+                    b.Navigation("Choices");
+                });
+
+            modelBuilder.Entity("TestMaker.Models.Survey", b =>
+                {
+                    b.Navigation("Questions");
                 });
 #pragma warning restore 612, 618
         }

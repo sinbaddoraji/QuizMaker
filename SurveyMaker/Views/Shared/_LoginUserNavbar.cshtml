@@ -6,7 +6,7 @@
 	@if (SignInManager.IsSignedIn(User))
 	{
 		<li class="nav-item">
-			<a class="nav-link text-dark" asp-page="/Surveys/Index">View Surveys</a>
+			<a class="nav-link text-dark" asp-controller="Surveys" asp-action="Index">View Surveys</a>
 		</li>
 	}
 

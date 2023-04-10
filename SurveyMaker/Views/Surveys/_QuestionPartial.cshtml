@@ -1,0 +1,50 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model List<TestMaker.Models.Question>
+<div class="card mb-3">
+	<div class="card-header">
+		<h4>Questions</h4>
+	</div>
+	<div class="card-body">
+		@{
+			int questionIndex = 1;
+		}
+		<div id="questions-container">
+			@foreach (var question in Model)
+			{
+				@:<div class="mb-4 question">
+				<label class="form-label">Question @questionIndex</label>
+				<div class="input-group">
+					<input type="text" class="form-control" asp-for="@($"Questions[{questionIndex - 1}].Content")" value="@question.Content" />
+					<div class="input-group-append">
+						<button type="button" class="btn btn-danger remove-question">Remove Question</button>
+					</div>
+				</div>
+				<div class="mt-2">
+					<label class="form-label">Choices</label>
+					<div class="choices-container">
+						@{
+							int choiceIndex = 1;
+						}
+						@foreach (var choice in question.Choices)
+						{
+							<div class="form-check choice">
+								<input class="form-check-label ml-2" type="text" asp-for="@($"Questions[{questionIndex - 1}].Choices[{choiceIndex - 1}].Content")" value="@choice.Content" />
+								<button type="button" class="btn btn-danger btn-sm ml-2 remove-choice">Remove Choice</button>
+							</div>
+							choiceIndex++;
+						}
+					</div>
+					
+
+				</div>
+				@:</div>
+				questionIndex++;
+			}
+		</div>
+		
+		<div class="form-group">
+			<button class="btn theme-btn mt-2" asp-action="Edit">Add Question</button>
+		</div>
+
+	</div>
+</div>

@@ -61,6 +61,8 @@ namespace SurveyMaker.Controllers
             if (ModelState.IsValid)
             {
                 survey.SurveyId = Guid.NewGuid();
+                survey.UserId = User.Identity.Name;
+
                 _context.Add(survey);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -89,9 +91,34 @@ namespace SurveyMaker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("SurveyId,Name,Description,UserId,CreatedDate,Timestamp")] Survey survey)
+        public async Task<IActionResult> Edit(Guid? id, [Bind("SurveyId,Name,Description,UserId,CreatedDate,Timestamp")] Survey survey)
         {
-            if (id != survey.SurveyId)
+
+	        if (id == null)
+	        {
+		        survey.Questions.Add(new Question()
+		        {
+			        Choices = new List<QuestionChoice>()
+			        {
+				        new QuestionChoice() { Content = "Choice 1" },
+				        new QuestionChoice() { Content = "Choice 2" },
+				        new QuestionChoice() { Content = "Choice 3" },
+				        new QuestionChoice() { Content = "Choice 4" }
+			        },
+			        Content = "Question?",
+		        });
+
+		        if (ModelState.IsValid)
+		        {
+			        _context.Update(survey);
+			        //await _context.SaveChangesAsync();
+			        //return RedirectToAction(nameof(Index));
+		        }
+
+		        return View(survey);
+			}
+
+			if (id != survey.SurveyId)
             {
                 return NotFound();
             }
@@ -119,8 +146,11 @@ namespace SurveyMaker.Controllers
             return View(survey);
         }
 
-        // GET: Surveys/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
+        
+
+
+		// GET: Surveys/Delete/5
+		public async Task<IActionResult> Delete(Guid? id)
         {
             if (id == null || _context.Survey == null)
             {
@@ -134,8 +164,8 @@ namespace SurveyMaker.Controllers
                 return NotFound();
             }
 
-            return View(survey);
-        }
+			return RedirectToAction(nameof(Index));
+		}
 
         // POST: Surveys/Delete/5
         [HttpPost, ActionName("Delete")]

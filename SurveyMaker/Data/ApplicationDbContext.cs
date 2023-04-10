@@ -11,5 +11,6 @@ namespace SurveyMaker.Data
         {
         }
         public DbSet<TestMaker.Models.Survey>? Survey { get; set; }
+        public DbSet<TestMaker.Models.Question>? Question { get; set; }
     }
 }
