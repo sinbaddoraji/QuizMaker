@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>aspnet-SurveyMaker-592d0b42-05db-48c9-be79-0e974135d9d8</UserSecretsId>
+    <UserSecretsId>aspnet-TestMaker-592d0b42-05db-48c9-be79-0e974135d9d8</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

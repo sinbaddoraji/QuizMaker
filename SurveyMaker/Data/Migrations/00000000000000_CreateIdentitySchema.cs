@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Migrations;
 using System;
 
-namespace SurveyMaker.Data.Migrations
+namespace TestMaker.Data.Migrations
 {
     public partial class CreateIdentitySchema : Migration
     {

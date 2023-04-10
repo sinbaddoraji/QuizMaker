@@ -92,6 +92,11 @@ h1, h2, h3 {
     min-height: 300px;
 }
 
+textarea {
+    min-height: 800px;
+    resize: vertical;
+}
+
 
 table {
     background-color: whitesmoke;
@@ -133,7 +138,7 @@ thead th {
     background-color: #00A8E8;
 }
 
-.survey-questions {
+.Test-questions {
     border: 1px solid #00A8E8;
     min-height: 300px;
     margin: 20px 0;

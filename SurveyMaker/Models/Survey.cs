@@ -1,8 +1,8 @@
 ﻿namespace TestMaker.Models
 {
-	public class Survey
+	public class Test
 	{
-		public Guid SurveyId { get; set; }
+		public Guid TestId { get; set; }
 		public string? Name {get; set; }
 
 		public string? Description { get; set; }
@@ -11,7 +11,8 @@
 
 		public DateTime CreatedDate { get; set; } = DateTime.Now;
 		
-		public List<Question>? Questions { get; set; } = new List<Question>();
-	}
+        public string? Questions { get; set; } = "\"Question Name\" - *\"Option 1\" - \"Option 2\" - \"Option 3\"";
+
+    }
 	
 }

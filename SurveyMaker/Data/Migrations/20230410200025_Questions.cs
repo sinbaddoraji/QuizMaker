@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace SurveyMaker.Data.Migrations
+namespace TestMaker.Data.Migrations
 {
     public partial class Questions : Migration
     {
@@ -17,11 +17,11 @@ namespace SurveyMaker.Data.Migrations
 
             migrationBuilder.DropColumn(
                 name: "Timestamp",
-                table: "Survey");
+                table: "Test");
 
             migrationBuilder.AddColumn<string>(
                 name: "Questions",
-                table: "Survey",
+                table: "Test",
                 type: "nvarchar(max)",
                 nullable: true);
         }
@@ -30,11 +30,11 @@ namespace SurveyMaker.Data.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "Questions",
-                table: "Survey");
+                table: "Test");
 
             migrationBuilder.AddColumn<byte[]>(
                 name: "Timestamp",
-                table: "Survey",
+                table: "Test",
                 type: "varbinary(max)",
                 nullable: true);
 
@@ -45,16 +45,16 @@ namespace SurveyMaker.Data.Migrations
                     QuestionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CorrectAnswerIndex = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SurveyId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    TestId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Question", x => x.QuestionId);
                     table.ForeignKey(
-                        name: "FK_Question_Survey_SurveyId",
-                        column: x => x.SurveyId,
-                        principalTable: "Survey",
-                        principalColumn: "SurveyId");
+                        name: "FK_Question_Test_TestId",
+                        column: x => x.TestId,
+                        principalTable: "Test",
+                        principalColumn: "TestId");
                 });
 
             migrationBuilder.CreateTable(
@@ -76,9 +76,9 @@ namespace SurveyMaker.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Question_SurveyId",
+                name: "IX_Question_TestId",
                 table: "Question",
-                column: "SurveyId");
+                column: "TestId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_QuestionChoice_QuestionId",

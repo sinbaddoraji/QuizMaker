@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TestMaker.Models;
 
-namespace SurveyMaker.Data
+namespace TestMaker.Data
 {
     public class ApplicationDbContext : IdentityDbContext
     {
@@ -10,7 +10,7 @@ namespace SurveyMaker.Data
             : base(options)
         {
         }
-        public DbSet<TestMaker.Models.Survey>? Survey { get; set; }
+        public DbSet<TestMaker.Models.Test>? Test { get; set; }
         public DbSet<TestMaker.Models.Question>? Question { get; set; }
     }
 }

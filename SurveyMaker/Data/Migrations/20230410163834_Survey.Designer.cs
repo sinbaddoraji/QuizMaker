@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using SurveyMaker.Data;
+using TestMaker.Data;
 
 #nullable disable
 
-namespace SurveyMaker.Data.Migrations
+namespace TestMaker.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230410163834_Survey")]
-    partial class Survey
+    [Migration("20230410163834_Test")]
+    partial class Test
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -238,12 +238,12 @@ namespace SurveyMaker.Data.Migrations
                     b.Property<string>("CorrectAnswerIndex")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("SurveyId")
+                    b.Property<Guid?>("TestId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("QuestionId");
 
-                    b.HasIndex("SurveyId");
+                    b.HasIndex("TestId");
 
                     b.ToTable("Question");
                 });
@@ -267,9 +267,9 @@ namespace SurveyMaker.Data.Migrations
                     b.ToTable("QuestionChoice");
                 });
 
-            modelBuilder.Entity("TestMaker.Models.Survey", b =>
+            modelBuilder.Entity("TestMaker.Models.Test", b =>
                 {
-                    b.Property<Guid>("SurveyId")
+                    b.Property<Guid>("TestId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -288,9 +288,9 @@ namespace SurveyMaker.Data.Migrations
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("SurveyId");
+                    b.HasKey("TestId");
 
-                    b.ToTable("Survey");
+                    b.ToTable("Test");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -346,9 +346,9 @@ namespace SurveyMaker.Data.Migrations
 
             modelBuilder.Entity("TestMaker.Models.Question", b =>
                 {
-                    b.HasOne("TestMaker.Models.Survey", null)
+                    b.HasOne("TestMaker.Models.Test", null)
                         .WithMany("Questions")
-                        .HasForeignKey("SurveyId");
+                        .HasForeignKey("TestId");
                 });
 
             modelBuilder.Entity("TestMaker.Models.QuestionChoice", b =>
@@ -363,7 +363,7 @@ namespace SurveyMaker.Data.Migrations
                     b.Navigation("Choices");
                 });
 
-            modelBuilder.Entity("TestMaker.Models.Survey", b =>
+            modelBuilder.Entity("TestMaker.Models.Test", b =>
                 {
                     b.Navigation("Questions");
                 });

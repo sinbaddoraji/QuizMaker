@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using SurveyMaker.Data;
+using TestMaker.Data;
 
 #nullable disable
 
-namespace SurveyMaker.Data.Migrations
+namespace TestMaker.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -224,9 +224,9 @@ namespace SurveyMaker.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("TestMaker.Models.Survey", b =>
+            modelBuilder.Entity("TestMaker.Models.Test", b =>
                 {
-                    b.Property<Guid>("SurveyId")
+                    b.Property<Guid>("TestId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -245,9 +245,9 @@ namespace SurveyMaker.Data.Migrations
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("SurveyId");
+                    b.HasKey("TestId");
 
-                    b.ToTable("Survey");
+                    b.ToTable("Test");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

@@ -1,4 +1,4 @@
-namespace SurveyMaker.Models
+namespace TestMaker.Models
 {
     public class ErrorViewModel
     {

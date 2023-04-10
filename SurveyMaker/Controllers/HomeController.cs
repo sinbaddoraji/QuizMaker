@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SurveyMaker.Models;
+using TestMaker.Models;
 using System.Diagnostics;
 
-namespace SurveyMaker.Controllers
+namespace TestMaker.Controllers
 {
     public class HomeController : Controller
     {

@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using SurveyMaker.Data;
+using TestMaker.Data;
 
-namespace SurveyMaker
+namespace TestMaker
 {
     public class Program
     {
