@@ -146,3 +146,7 @@ thead th {
     margin: 20px 0;
 }
 
+.description {
+    min-height: 50px;
+    font-weight: 400;
+ }

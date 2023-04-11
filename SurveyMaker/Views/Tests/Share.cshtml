@@ -1,22 +1,36 @@
 ﻿@using TestMaker.Controllers
 @model TestModel
 @{
+
 }
 
 <div class="table-parent">
 	
-	<form asp-controller="Tests" asp-action="SubmitScores" method="post">
+	@using (Html.BeginForm("SubmitScores", "Tests", Model))
+	{
+		<h1>@Html.DisplayTextFor(m => m.TestName);</h1>
+		<hr />
+	
+		<article class="description">
+			@Html.DisplayTextFor(m => m.TestDescription);
+		</article>
+		
+
 		@foreach (var question in Model.Tests)
 		{
+			@Html.HiddenFor(m => question.QuestionId)
+			
 			<div class="mb-4">
 				<b class="mb-3">@question.Content</b>
 				<br/>
+				
+				@Html.HiddenFor(m => m.Tests)
 			
 				@for(int i = 0; i < question.Choices.Count; i++)
 				{
 					<div class="d-inline m-4">
 						<label asp-for="@question.Choices[i]">@question.Choices[i]</label>
-						<input type="checkbox" asp-for="@question.ChoicesChecked[i]" value="@i"/>
+						@Html.CheckBoxFor(m => @question.ChoicesChecked[i])
 					</div>
 				}
 
@@ -26,9 +40,8 @@
 		}
 		
 		<div class="form-group">
-			<button type="submit" class="w-100 btn theme-btn">Submit</button>
+			<button type="submit" value="SubmitScores" asp class="w-100 btn theme-btn">Submit</button>
 		</div>
-		
+	}
 	
-	</form>
 </div>

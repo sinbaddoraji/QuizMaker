@@ -185,9 +185,11 @@ namespace TestMaker.Controllers
 			return View(t);
         }
 
-        [HttpPost, ActionName("SubmitScores")]
+		[HttpPost]
 		public IActionResult SubmitScores(TestModel m)
 		{
+            if(m == null || m.id == null || m.TestName == null)
+				return Problem("Model is null");
 			var newTestResults = new TestResults
 			{
                 UserId = User.Identity?.Name,
