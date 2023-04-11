@@ -23,7 +23,7 @@ namespace TestMaker.Controllers
         public async Task<IActionResult> Index()
         {
             return _context.TestResults != null ?
-                        View(await _context.TestResults.ToListAsync()) :
+                        View((await _context.TestResults.ToListAsync()).Where(x => x.UserId ==  User.Identity.Name)) :
                         Problem("Entity set 'ApplicationDbContext.TestResults'  is null.");
         }
 
@@ -36,7 +36,7 @@ namespace TestMaker.Controllers
             }
 
             var testResults = await _context.TestResults
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id && m.UserId == User.Identity.Name);
             if (testResults == null)
             {
                 return NotFound();
