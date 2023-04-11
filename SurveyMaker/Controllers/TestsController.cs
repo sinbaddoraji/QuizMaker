@@ -44,6 +44,7 @@ namespace TestMaker.Controllers
             if (ModelState.IsValid)
             {
                 Test.TestId = Guid.NewGuid();
+                Test.UserId = User.Identity.Name;
                 _context.Add(Test);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
