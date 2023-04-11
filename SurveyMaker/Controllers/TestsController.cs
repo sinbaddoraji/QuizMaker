@@ -26,24 +26,7 @@ namespace TestMaker.Controllers
                         View(await _context.Test.ToListAsync()) :
                         Problem("Entity set 'ApplicationDbContext.Test'  is null.");
         }
-
-        // GET: Tests/Details/5
-        public async Task<IActionResult> Details(Guid? id)
-        {
-            if (id == null || _context.Test == null)
-            {
-                return NotFound();
-            }
-
-            var Test = await _context.Test
-                .FirstOrDefaultAsync(m => m.TestId == id);
-            if (Test == null)
-            {
-                return NotFound();
-            }
-
-            return View(Test);
-        }
+        
 
         // GET: Tests/Create
         public IActionResult Create()
@@ -160,5 +143,68 @@ namespace TestMaker.Controllers
         {
             return (_context.Test?.Any(e => e.TestId == id)).GetValueOrDefault();
         }
+
+        public async Task<IActionResult> Share(Guid id)
+        {
+	        var Test = await _context.Test
+		        .FirstOrDefaultAsync(m => m.TestId == id);
+
+	        List<QuestionModel> questionList = new List<QuestionModel>();
+	        foreach (var question in Test.Questions.Split("\n"))
+	        {
+				//\"Question Name\" - *\"Option 1\" - \"Option 2\" - \"Option 3\"
+				var q = question.Split("-");
+				QuestionModel questionObject = new QuestionModel();
+
+				questionObject.Content = q[0].Replace("\"", "").Trim(' ');
+
+				for (int i = 1; i < q.Length; i++)
+				{
+					var current = q[i].Replace("\"", "").Trim(' ');
+                    
+					current = current.Trim('*', ' ');
+					if (q[i].Trim(' ').StartsWith("*"))
+					{
+						questionObject.CorrectAnswerIndex.Add(current);
+					}
+
+					questionObject.Choices.Add(current);
+                    questionObject.ChoicesChecked.Add(false);
+				}
+				questionList.Add(questionObject);
+			}
+
+	        TestModel t = new TestModel()
+	        {
+		        Tests = questionList,
+		        id = Test.TestId,
+                TestName = Test.Name,
+                TestDescription = Test.Description
+	        };
+
+			return View(t);
+        }
+
+        [HttpPost, ActionName("SubmitScores")]
+		public IActionResult SubmitScores(TestModel m)
+		{
+			var newTestResults = new TestResults
+			{
+                UserId = User.Identity?.Name,
+                TestId = m.id,
+                TestName = m.TestName,
+                TestDescription = m.TestDescription,
+                Score = m.Tests
+	                .Sum(
+		                question => question.ChoicesChecked
+			                .Where((choice, index) 
+				                => choice && question.CorrectAnswerIndex.Contains(question.Choices[index])).Count())
+			};
+
+            _context.TestResults?.Add(newTestResults);
+            _context.SaveChanges();
+
+            return RedirectToAction("Index", "TestResults");
+		}
     }
 }

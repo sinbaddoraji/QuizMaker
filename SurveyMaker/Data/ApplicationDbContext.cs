@@ -11,6 +11,7 @@ namespace TestMaker.Data
         {
         }
         public DbSet<TestMaker.Models.Test>? Test { get; set; }
-        public DbSet<TestMaker.Models.Question>? Question { get; set; }
-    }
+
+        public DbSet<TestMaker.Models.TestResults>? TestResults { get; set; }
+	}
 }
