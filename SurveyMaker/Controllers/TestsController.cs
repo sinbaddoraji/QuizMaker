@@ -84,6 +84,7 @@ namespace TestMaker.Controllers
             {
                 try
                 {
+                    Test.UserId = User.Identity.Name;
                     _context.Update(Test);
                     await _context.SaveChangesAsync();
                 }
@@ -166,7 +167,7 @@ namespace TestMaker.Controllers
 					current = current.Trim('*', ' ');
 					if (q[i].Trim(' ').StartsWith("*"))
                     {
-                        questionObject.CorrectAnswerIndex = i;
+                        questionObject.CorrectAnswerIndex = i - 1;
                     }
 
 					questionObject.Choices.Add(current);
@@ -203,7 +204,19 @@ namespace TestMaker.Controllers
 
             ViewBag.Score = score;
 
-            return RedirectToAction(nameof(Index), "TestResults");
+            var newTestResults = new TestResults
+            {
+	            UserId = User.Identity?.Name,
+	            TestId = model.id,
+	            TestName = model.TestName,
+	            TestDescription = model.TestDescription,
+	            Score = Convert.ToInt32(score)
+            };
+
+            _context.TestResults?.Add(newTestResults);
+            _context.SaveChanges();
+
+			return RedirectToAction(nameof(Index), "TestResults");
         }
 
     }

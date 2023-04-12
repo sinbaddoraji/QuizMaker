@@ -11,6 +11,12 @@
 {
 	@Html.AntiForgeryToken()
 
+
+	@Html.HiddenFor(m => m.id)
+
+	@Html.HiddenFor(m => m.TestName)
+	@Html.HiddenFor(m => m.TestDescription)
+
 	for (var i = 0; i < Model.Tests.Count; i++)
 	{
 		<h3>@Model.Tests[i].Content</h3>
