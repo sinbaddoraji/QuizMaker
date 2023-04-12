@@ -4,6 +4,7 @@ Test Maker is a web application that allows users to create and administer multi
 
 ## Features
 
+- Full Account Management (Login, Register, Profile mangement,...)
 - Create multiple-choice tests with any number of questions and choices
 - Edit or delete existing tests
 - Take tests and receive a score based on the number of correct answers
@@ -13,8 +14,7 @@ Test Maker is a web application that allows users to create and administer multi
 
 1. Clone the repository to your local machine using `git clone https://github.com/sinbaddoraji/QuizMaker.git`.
 2. Open the solution file (`TestMaker.sln`) in Visual Studio.
-3. Modify the database connection string in the `Web.config` file to point to your local SQL Server instance.
-4. Build and run the application in Visual Studio.
+3. Build and run the application in Visual Studio.
 
 ## Usage
 
@@ -25,4 +25,15 @@ To take a test, click the "Take Test" button on the home page and select the des
 To view test results and scores, navigate to the "Test Results" page. You can view scores for individual tests or for all tests in the database.
 
 ## Screenshots
+
+![image](https://user-images.githubusercontent.com/40364978/231514177-dc65581d-e0d7-4288-a865-ce12c7b7dc8a.png)
+
+![image](https://user-images.githubusercontent.com/40364978/231515181-37c8ebde-b993-4f62-b926-1cbc1184dfd5.png)
+
+![image](https://user-images.githubusercontent.com/40364978/231515296-6928cda0-a231-4069-8d0b-93146ae88f34.png)
+
+![image](https://user-images.githubusercontent.com/40364978/231515809-cbf8b749-f368-4e52-b401-64f6e13c6090.png)
+
+![image](https://user-images.githubusercontent.com/40364978/231515894-ea1d67c6-b764-4ae2-9fa4-66645ae8a945.png)
+
 
