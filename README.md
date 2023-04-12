@@ -28,9 +28,9 @@ To view test results and scores, navigate to the "Test Results" page. You can vi
 
 ![image](https://user-images.githubusercontent.com/40364978/231514177-dc65581d-e0d7-4288-a865-ce12c7b7dc8a.png)
 
-![image](https://user-images.githubusercontent.com/40364978/231515181-37c8ebde-b993-4f62-b926-1cbc1184dfd5.png)
-
 ![image](https://user-images.githubusercontent.com/40364978/231515296-6928cda0-a231-4069-8d0b-93146ae88f34.png)
+
+![image](https://user-images.githubusercontent.com/40364978/231520018-fd7c1a1e-5ed5-433f-987c-730c0642c618.png)
 
 ![image](https://user-images.githubusercontent.com/40364978/231515809-cbf8b749-f368-4e52-b401-64f6e13c6090.png)
 
