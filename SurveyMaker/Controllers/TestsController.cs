@@ -165,12 +165,11 @@ namespace TestMaker.Controllers
                     
 					current = current.Trim('*', ' ');
 					if (q[i].Trim(' ').StartsWith("*"))
-					{
-						questionObject.CorrectAnswerIndex.Add(current);
-					}
+                    {
+                        questionObject.CorrectAnswerIndex = i;
+                    }
 
 					questionObject.Choices.Add(current);
-                    questionObject.ChoicesChecked.Add(false);
 				}
 				questionList.Add(questionObject);
 			}
@@ -186,28 +185,26 @@ namespace TestMaker.Controllers
 			return View(t);
         }
 
-		[HttpPost]
-		public IActionResult SubmitScores(TestModel m)
-		{
-            if(m == null || m.id == null || m.TestName == null)
-				return Problem("Model is null");
-			var newTestResults = new TestResults
-			{
-                UserId = User.Identity?.Name,
-                TestId = m.id,
-                TestName = m.TestName,
-                TestDescription = m.TestDescription,
-                Score = m.Tests
-	                .Sum(
-		                question => question.ChoicesChecked
-			                .Where((choice, index) 
-				                => choice && question.CorrectAnswerIndex.Contains(question.Choices[index])).Count())
-			};
+        [HttpPost]
+        public ActionResult SubmitScores(TestModel model)
+        {
+            int totalQuestions = model.Tests.Count;
+            int totalCorrectAnswers = 0;
 
-            _context.TestResults?.Add(newTestResults);
-            _context.SaveChanges();
+            foreach (var question in model.Tests)
+            {
+                if (question.SelectedIndex == question.CorrectAnswerIndex)
+                {
+                    totalCorrectAnswers++;
+                }
+            }
 
-            return RedirectToAction("Index", "TestResults");
-		}
+            float score = (float)totalCorrectAnswers / totalQuestions * 100;
+
+            ViewBag.Score = score;
+
+            return RedirectToAction(nameof(Index), "TestResults");
+        }
+
     }
 }
