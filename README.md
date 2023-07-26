@@ -26,14 +26,12 @@ To view test results and scores, navigate to the "Test Results" page. You can vi
 
 ## Screenshots
 
-![image](https://user-images.githubusercontent.com/40364978/231514177-dc65581d-e0d7-4288-a865-ce12c7b7dc8a.png)
+<img width="900" alt="image" src="https://github.com/sinbaddoraji/QuizMaker/assets/40364978/4a861bc2-72dc-4a9a-9331-a388fd4cc722">
 
-![image](https://user-images.githubusercontent.com/40364978/231515296-6928cda0-a231-4069-8d0b-93146ae88f34.png)
+<img width="900" alt="image" src="https://github.com/sinbaddoraji/QuizMaker/assets/40364978/693258a1-11c1-47a8-8663-b29d0e6c7c10">
 
-![image](https://user-images.githubusercontent.com/40364978/231520018-fd7c1a1e-5ed5-433f-987c-730c0642c618.png)
+<img width="900" alt="image" src="https://github.com/sinbaddoraji/QuizMaker/assets/40364978/2036669f-c7e3-4909-a870-da3e7afdec43">
 
-![image](https://user-images.githubusercontent.com/40364978/231515809-cbf8b749-f368-4e52-b401-64f6e13c6090.png)
+<img width="900" alt="image" src="https://github.com/sinbaddoraji/QuizMaker/assets/40364978/04bed35f-bb15-4140-b101-c3059019e6d7">
 
-![image](https://user-images.githubusercontent.com/40364978/231515894-ea1d67c6-b764-4ae2-9fa4-66645ae8a945.png)
-
-
+<img width="900" alt="image" src="https://github.com/sinbaddoraji/QuizMaker/assets/40364978/e5d6efec-595c-462b-890f-64a76ac30576">
