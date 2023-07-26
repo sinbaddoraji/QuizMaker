@@ -4,41 +4,48 @@
 	ViewBag.Title = "Test";
 }
 
-<h1>@Model.TestName</h1>
-<p>@Model.TestDescription</p>
-
-@using (Html.BeginForm("SubmitScores", "Tests"))
-{
-	@Html.AntiForgeryToken()
 
 
-	@Html.HiddenFor(m => m.id)
+<div class="card">
 
-	@Html.HiddenFor(m => m.TestName)
-	@Html.HiddenFor(m => m.TestDescription)
+    <h1>@Model.TestName</h1>
+    <p>@Model.TestDescription</p>
+    <br/>
 
-	for (var i = 0; i < Model.Tests.Count; i++)
-	{
-		<h3>@Model.Tests[i].Content</h3>
-		<ul>
-			@for (var j = 0; j < Model.Tests[i].Choices.Count; j++)
-			{
-				<li>
-					<label>
-						@Html.RadioButtonFor(m => m.Tests[i].SelectedIndex, j, new { id = "question" + i + "choice" + j })
-						@Model.Tests[i].Choices[j]
-					</label>
-				</li>
-			}
-		</ul>
-		@Html.HiddenFor(m => m.Tests[i].QuestionId)
-		@Html.HiddenFor(m => m.Tests[i].Content)
-		@Html.HiddenFor(m => m.Tests[i].CorrectAnswerIndex)
-		@Html.HiddenFor(m => m.Tests[i].Choices)
-	}
+    @using (Html.BeginForm("SubmitScores", "Tests"))
+    {
+        @Html.AntiForgeryToken()
 
-	<button type="submit" class="btn btn-primary">Submit</button>
-}
+
+        @Html.HiddenFor(m => m.id)
+
+        @Html.HiddenFor(m => m.TestName)
+        @Html.HiddenFor(m => m.TestDescription)
+
+        for (var i = 0; i < Model.Tests.Count; i++)
+        {
+            <h3>@Model.Tests[i].Content</h3>
+            <ul>
+                @for (var j = 0; j < Model.Tests[i].Choices.Count; j++)
+                {
+                    <li>
+                        <label>
+                            @Html.RadioButtonFor(m => m.Tests[i].SelectedIndex, j, new { id = "question" + i + "choice" + j })
+                            @Model.Tests[i].Choices[j]
+                        </label>
+                    </li>
+                }
+            </ul>
+            @Html.HiddenFor(m => m.Tests[i].QuestionId)
+            @Html.HiddenFor(m => m.Tests[i].Content)
+            @Html.HiddenFor(m => m.Tests[i].CorrectAnswerIndex)
+            @Html.HiddenFor(m => m.Tests[i].Choices)
+        }
+
+        <button type="submit" class="btn theme-btn">Submit</button>
+    }
+
+</div>
 
 @section Scripts {
 	<script>

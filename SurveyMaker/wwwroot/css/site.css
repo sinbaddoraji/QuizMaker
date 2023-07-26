@@ -54,12 +54,15 @@ a {
     color: #00A8E8;
 }
 
-h1, h2, h3 {
+h1, h2 {
     color: #00A8E8;
     margin-bottom: 1rem;
     text-align: center;
 }
 
+h3 {
+    margin-bottom: 1rem;
+}
 
 .card ul {
     list-style: none;
@@ -108,12 +111,12 @@ thead th {
 
 .feature-item {
     background-color: #00A8E8;
-    border: 2px solid black;
+    border: 1px solid black;
     border-radius: 20px;
     color: whitesmoke;
     display: inline-grid;
     margin: 6px;
-    padding: 6px;
+    padding: 10px;
 }
 
 .homepage-article {
