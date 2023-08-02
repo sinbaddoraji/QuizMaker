@@ -1,8 +1,13 @@
-﻿@model TestMaker.Models.Test
+﻿@using TestMaker.Data.Migrations
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using TestMaker.Helpers.Interfaces
+@inject ISafeJsonSerializer serializer;
+@model TestMaker.Models.Test
 
 @{
     ViewData["Title"] = "Edit";
 }
+
 
 <div class="table-parent">
 	<h2>Edit Test</h2>
@@ -17,16 +22,35 @@
 		</div>
 		<div class="form-group mb-3">
 			<label asp-for="Description" class="control-label"></label>
-			<input asp-for="Description" class="form-control"/>
+			<textarea rows="5" asp-for="Description" class="form-control"> </textarea>
 			<span asp-validation-for="Description" class="text-danger"></span>
 		</div>
-		<div class="form-group mb-3">
-			<label asp-for="Questions" class="control-label"></label>
-			<textarea rows="10" asp-for="Questions" class="form-control"> </textarea>
-			<span asp-validation-for="Questions" class="text-danger"></span>
-		</div>
+        <div>
+            @if(Model.Questions != null)
+            {
+                @foreach (var question in serializer.Deserialize<List<Question>>(Model.Questions)!)
+                {
+                    <div class="form-group mb-3">
+                        <label asp-for="@question.QuestionContent" class="control-label"></label>
+                        <input asp-for="@question.QuestionContent" class="form-control" />
+                        <span asp-validation-for="@question.QuestionContent" class="text-danger"></span>
+                    </div>
+
+                    for (var index = 0; index < question.Answers.Count; index++)
+                    {
+                        <input asp-for="@question.Answers[index]" class="form-control" />
+                        <span asp-validation-for="@question.Answers[index]" class="text-danger"></span>
+                    }
+                }
+            }
+        </div>
 		
-		<div>
+        <div>
+			<input type="submit" asp-action="AddQuestion" asp-controller="Tests"
+                   value="Add Question" class="btn theme-btn"/>
+        </div>
+		
+        <div>
 			<p>Define questions like this: "Question Name" - *"Option 1" - "Option 2" - "Option 3"</p>
 			<p>Signify the correct option(s) by putting a * before the option </p>
 		</div>
@@ -34,9 +58,10 @@
 			<input type="submit" value="Save" class="w-100 btn theme-btn"/>
 		</div>
 	</form>
-	<div>
-		<a asp-action="Index">Back to List</a>
-	</div>
+    <div>
+        <a asp-action="Index">Back to List</a>
+    </div>
+	
 </div>
 
 

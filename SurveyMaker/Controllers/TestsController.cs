@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TestMaker.Data;
+using TestMaker.Helpers.Implementation;
 using TestMaker.Models;
 
 namespace TestMaker.Controllers
@@ -80,6 +81,11 @@ namespace TestMaker.Controllers
                 return NotFound();
             }
 
+            var test = await _context.Test
+                .FirstOrDefaultAsync(m => m.TestId == id);
+
+            Test = test;
+
             if (ModelState.IsValid)
             {
                 try
@@ -102,6 +108,54 @@ namespace TestMaker.Controllers
                 return RedirectToAction(nameof(Index));
             }
             return View(Test);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddQuestion(Guid testId)
+        {
+            var test = await _context.Test
+                .FirstOrDefaultAsync(m => m.TestId == testId);
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Append the new question to the existing Questions property
+                    var serializer = new SafeJsonSerializer();
+                    var questions = serializer
+                        .Deserialize<List<Question>>(test.Questions);
+
+                    questions.Add(new Question()
+                    {
+                        Answers = new List<string>()
+                        {
+                            "Option1", "Option2", "Option3"
+                        },
+                        AnswersState = new List<bool>()
+                        {
+                            false, false, false
+                        },
+                        QuestionContent = "Question Name",
+                        QuestionId = Guid.NewGuid()
+                    });
+
+
+                    
+                    test.Questions = serializer.Serialize(questions);
+                    
+                    await _context.SaveChangesAsync();
+
+                    // Redirect back to the "Edit" action of "Tests" controller with updated parameters
+                    return RedirectToAction("Edit", "Tests", new { id = testId, test });
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    // Handle the exception if necessary
+                }
+            }
+
+            // If the model state is invalid or an exception occurred, return the view with the modified or invalid test model
+            return View(test);
         }
 
         // GET: Tests/Delete/5
@@ -148,42 +202,42 @@ namespace TestMaker.Controllers
 
         public async Task<IActionResult> Share(Guid id)
         {
-	        var Test = await _context.Test
-		        .FirstOrDefaultAsync(m => m.TestId == id);
+	  //      var Test = await _context.Test
+		 //       .FirstOrDefaultAsync(m => m.TestId == id);
 
-	        List<QuestionModel> questionList = new List<QuestionModel>();
-	        foreach (var question in Test.Questions.Split("\n"))
-	        {
-				//\"Question Name\" - *\"Option 1\" - \"Option 2\" - \"Option 3\"
-				var q = question.Split("-");
-				QuestionModel questionObject = new QuestionModel();
+	  //      List<QuestionModel> questionList = new List<QuestionModel>();
+	  //      foreach (var question in Test.Questions.Split("\n"))
+	  //      {
+			//	//\"Question Name\" - *\"Option 1\" - \"Option 2\" - \"Option 3\"
+			//	var q = question.Split("-");
+			//	QuestionModel questionObject = new QuestionModel();
 
-				questionObject.Content = q[0].Replace("\"", "").Trim(' ');
+			//	questionObject.Content = q[0].Replace("\"", "").Trim(' ');
 
-				for (int i = 1; i < q.Length; i++)
-				{
-					var current = q[i].Replace("\"", "").Trim(' ');
+			//	for (int i = 1; i < q.Length; i++)
+			//	{
+			//		var current = q[i].Replace("\"", "").Trim(' ');
                     
-					current = current.Trim('*', ' ');
-					if (q[i].Trim(' ').StartsWith("*"))
-                    {
-                        questionObject.CorrectAnswerIndex = i - 1;
-                    }
+			//		current = current.Trim('*', ' ');
+			//		if (q[i].Trim(' ').StartsWith("*"))
+   //                 {
+   //                     questionObject.CorrectAnswerIndex = i - 1;
+   //                 }
 
-					questionObject.Choices.Add(current);
-				}
-				questionList.Add(questionObject);
-			}
+			//		questionObject.Choices.Add(current);
+			//	}
+			//	questionList.Add(questionObject);
+			//}
 
-	        TestModel t = new TestModel()
-	        {
-		        Tests = questionList,
-		        id = Test.TestId,
-                TestName = Test.Name,
-                TestDescription = Test.Description
-	        };
+	        //TestModel t = new TestModel()
+	        //{
+		       // Tests = questionList,
+		       // id = Test.TestId,
+         //       TestName = Test.Name,
+         //       TestDescription = Test.Description
+	        //};
 
-			return View(t);
+			return View();
         }
 
         [HttpPost]
@@ -192,13 +246,13 @@ namespace TestMaker.Controllers
             int totalQuestions = model.Tests.Count;
             int totalCorrectAnswers = 0;
 
-            foreach (var question in model.Tests)
-            {
-                if (question.SelectedIndex == question.CorrectAnswerIndex)
-                {
-                    totalCorrectAnswers++;
-                }
-            }
+            //foreach (var question in model.Tests)
+            //{
+            //    if (question.SelectedIndex == question.CorrectAnswerIndex)
+            //    {
+            //        totalCorrectAnswers++;
+            //    }
+            //}
 
             float score = (float)totalCorrectAnswers / totalQuestions * 100;
 

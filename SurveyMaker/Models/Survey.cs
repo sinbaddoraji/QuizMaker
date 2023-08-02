@@ -1,4 +1,5 @@
-﻿namespace TestMaker.Models
+﻿
+namespace TestMaker.Models
 {
 	public class Test
 	{
@@ -11,7 +12,7 @@
 
 		public DateTime CreatedDate { get; set; } = DateTime.Now;
 		
-        public string? Questions { get; set; } = "\"Question Name\" - *\"Option 1\" - \"Option 2\" - \"Option 3\"";
+        public string Questions { get; set; } = System.Text.Json.JsonSerializer.Serialize(new List<Question>());
 
     }
 	
