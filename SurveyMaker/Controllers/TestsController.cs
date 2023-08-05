@@ -6,8 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TestMaker.Data;
+using TestMaker.Data.Migrations;
 using TestMaker.Helpers.Implementation;
 using TestMaker.Models;
+using Test = TestMaker.Models.Test;
 
 namespace TestMaker.Controllers
 {
@@ -61,12 +63,22 @@ namespace TestMaker.Controllers
                 return NotFound();
             }
 
-            var Test = await _context.Test.FindAsync(id);
-            if (Test == null)
+            var test = await _context.Test.FindAsync(id);
+            if (test == null)
             {
                 return NotFound();
             }
-            return View(Test);
+
+            var testWrapper = new TestWrapper()
+            {
+                CreatedDate = test.CreatedDate,
+                Description = test.Description,
+                Name = test.Name,
+                TestId = test.TestId,
+                UserId = test.UserId,
+                Questions = new SafeJsonSerializer().Deserialize<List<Question>>(test.Questions)
+            };
+            return View(testWrapper);
         }
 
         // POST: Tests/Edit/5
@@ -74,24 +86,30 @@ namespace TestMaker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] Test Test)
+        public async Task<IActionResult> Edit(Guid id, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
         {
             if (id != Test.TestId)
             {
                 return NotFound();
             }
 
+
             var test = await _context.Test
                 .FirstOrDefaultAsync(m => m.TestId == id);
 
-            Test = test;
+            var serializer = new SafeJsonSerializer();
+
+            test.Name = Test.Name;
+            test.Description = Test.Description;
+            test.Questions = serializer.Serialize(Test.Questions);
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    Test.UserId = User.Identity.Name;
-                    _context.Update(Test);
+                    // tRY MANUALLY GETTING THE QUESTIONS FROM THE FORM
+
+                    _context.Update(test);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -107,25 +125,24 @@ namespace TestMaker.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            
+
             return View(Test);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddQuestion(Guid testId)
+        public async Task<IActionResult> AddQuestion(Guid testId, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
         {
-            var test = await _context.Test
-                .FirstOrDefaultAsync(m => m.TestId == testId);
+            
 
             if (ModelState.IsValid)
             {
                 try
                 {
                     // Append the new question to the existing Questions property
-                    var serializer = new SafeJsonSerializer();
-                    var questions = serializer
-                        .Deserialize<List<Question>>(test.Questions);
 
-                    questions.Add(new Question()
+
+                    Test.Questions.Add(new Question()
                     {
                         Answers = new List<string>()
                         {
@@ -138,15 +155,32 @@ namespace TestMaker.Controllers
                         QuestionContent = "Question Name",
                         QuestionId = Guid.NewGuid()
                     });
-
-
                     
-                    test.Questions = serializer.Serialize(questions);
-                    
-                    await _context.SaveChangesAsync();
+                    return RedirectToAction("Edit", "Tests", new { id = testId, Test });
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    // Handle the exception if necessary
+                }
+            }
+            
+            return RedirectToAction("Edit", "Tests", new { id = testId, Test });
+        }
 
-                    // Redirect back to the "Edit" action of "Tests" controller with updated parameters
-                    return RedirectToAction("Edit", "Tests", new { id = testId, test });
+        [HttpPost]
+        public async Task<IActionResult> RemoveOption(Guid testId, int questionIndex, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
+        {
+
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Append the new question to the existing Questions property
+
+                    Test.Questions.RemoveAt(questionIndex);
+
+                    return RedirectToAction("Edit", "Tests", new { id = testId, Test });
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -154,9 +188,78 @@ namespace TestMaker.Controllers
                 }
             }
 
-            // If the model state is invalid or an exception occurred, return the view with the modified or invalid test model
-            return View(test);
+            return RedirectToAction("Edit", "Tests", new { id = testId, Test });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AddOption(Guid testId, int questionIndex, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    Test.Questions[questionIndex].Answers.Add("New Option");
+                    Test.Questions[questionIndex].AnswersState.Add(false);
+                    
+                    //await _context.SaveChangesAsync();
+
+                    return RedirectToAction("Edit", "Tests", new { id = testId });
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    // Handle the exception if necessary
+                }
+            }
+
+            return View("Edit", Test);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveOption(Guid testId, int questionIndex, int optionIndex, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    Test.Questions[questionIndex].Answers.RemoveAt(optionIndex);
+                    Test.Questions[questionIndex].AnswersState.RemoveAt(optionIndex);
+                    
+                    await _context.SaveChangesAsync();
+
+                    return RedirectToAction("Edit", "Tests", new { id = testId });
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    // Handle the exception if necessary
+                }
+            }
+
+            return View("Edit", Test);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveQuestion(Guid testId, int questionIndex, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    Test.Questions.RemoveAt(questionIndex);
+
+                    await _context.SaveChangesAsync();
+
+                    return RedirectToAction("Edit", "Tests", new { id = testId });
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    // Handle the exception if necessary
+                }
+            }
+
+            return View("Edit", Test);
+        }
+
+
 
         // GET: Tests/Delete/5
         public async Task<IActionResult> Delete(Guid? id)
@@ -202,42 +305,42 @@ namespace TestMaker.Controllers
 
         public async Task<IActionResult> Share(Guid id)
         {
-	  //      var Test = await _context.Test
-		 //       .FirstOrDefaultAsync(m => m.TestId == id);
+            var Test = await _context.Test
+                .FirstOrDefaultAsync(m => m.TestId == id);
 
-	  //      List<QuestionModel> questionList = new List<QuestionModel>();
-	  //      foreach (var question in Test.Questions.Split("\n"))
-	  //      {
-			//	//\"Question Name\" - *\"Option 1\" - \"Option 2\" - \"Option 3\"
-			//	var q = question.Split("-");
-			//	QuestionModel questionObject = new QuestionModel();
+            //List<Question> questionList = new List<Question>();
+            //foreach (var question in Test.Questions.Split("\n"))
+            //{
+            //    //\"Question Name\" - *\"Option 1\" - \"Option 2\" - \"Option 3\"
+            //    var q = question.Split("-");
+            //    Question questionObject = new Question();
 
-			//	questionObject.Content = q[0].Replace("\"", "").Trim(' ');
+            //    questionObject.Content = q[0].Replace("\"", "").Trim(' ');
 
-			//	for (int i = 1; i < q.Length; i++)
-			//	{
-			//		var current = q[i].Replace("\"", "").Trim(' ');
-                    
-			//		current = current.Trim('*', ' ');
-			//		if (q[i].Trim(' ').StartsWith("*"))
-   //                 {
-   //                     questionObject.CorrectAnswerIndex = i - 1;
-   //                 }
+            //    for (int i = 1; i < q.Length; i++)
+            //    {
+            //        var current = q[i].Replace("\"", "").Trim(' ');
 
-			//		questionObject.Choices.Add(current);
-			//	}
-			//	questionList.Add(questionObject);
-			//}
+            //        current = current.Trim('*', ' ');
+            //        if (q[i].Trim(' ').StartsWith("*"))
+            //        {
+            //            questionObject.CorrectAnswerIndex = i - 1;
+            //        }
 
-	        //TestModel t = new TestModel()
-	        //{
-		       // Tests = questionList,
-		       // id = Test.TestId,
-         //       TestName = Test.Name,
-         //       TestDescription = Test.Description
-	        //};
+            //        questionObject.Choices.Add(current);
+            //    }
+            //    questionList.Add(questionObject);
+            //}
 
-			return View();
+            //TestModel t = new TestModel()
+            //{
+            //    Tests = questionList,
+            //    id = Test.TestId,
+            //    TestName = Test.Name,
+            //    TestDescription = Test.Description
+            //};
+
+            return View();
         }
 
         [HttpPost]
@@ -254,21 +357,21 @@ namespace TestMaker.Controllers
             //    }
             //}
 
-            float score = (float)totalCorrectAnswers / totalQuestions * 100;
+            //float score = (float)totalCorrectAnswers / totalQuestions * 100;
 
-            ViewBag.Score = score;
+            //ViewBag.Score = score;
 
-            var newTestResults = new TestResults
-            {
-	            UserId = User.Identity?.Name,
-	            TestId = model.id,
-	            TestName = model.TestName,
-	            TestDescription = model.TestDescription,
-	            Score = Convert.ToInt32(score)
-            };
+            //var newTestResults = new TestResults
+            //{
+	           // UserId = User.Identity?.Name,
+	           // TestId = model.id,
+	           // TestName = model.TestName,
+	           // TestDescription = model.TestDescription,
+	           // Score = Convert.ToInt32(score)
+            //};
 
-            _context.TestResults?.Add(newTestResults);
-            _context.SaveChanges();
+            //_context.TestResults?.Add(newTestResults);
+            //_context.SaveChanges();
 
 			return RedirectToAction(nameof(Index), "TestResults");
         }
