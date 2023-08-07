@@ -52,7 +52,17 @@ namespace TestMaker.Controllers
                 Test.UserId = User.Identity.Name;
                 _context.Add(Test);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+                var testWrapper = new TestWrapper()
+                {
+                    CreatedDate = Test.CreatedDate,
+                    Description = Test.Description,
+                    Name = Test.Name,
+                    TestId = Test.TestId,
+                    UserId = Test.UserId,
+                    Questions = new SafeJsonSerializer().Deserialize<List<Question>>(Test.Questions)
+                };
+                return View("Edit", testWrapper);
             }
             return View(Test);
         }
@@ -92,6 +102,11 @@ namespace TestMaker.Controllers
                 .FirstOrDefaultAsync(m => m.TestId == Test.TestId);
 
             //Make sure that the questions have the same number of answer states as answers
+            if (Test.Questions == null)
+            {
+                Test.Questions = new List<Question>();
+            }
+
             for (int i = 0; i < Test.Questions.Count; i++)
             {
                 if (Test.Questions[i].AnswersState == null)
@@ -348,14 +363,14 @@ namespace TestMaker.Controllers
                 }
             }
             
-
+            int score = (int)((double)((double)totalCorrectAnswers / (double)totalAnswers) * 100.00);
             var newTestResults = new TestResults
             {
                 UserId = User.Identity?.Name,
                 TestId = testTaken.TestId,
                 TestName = testTaken.Name,
                 TestDescription = testTaken.Description,
-                Score = Convert.ToInt32((totalCorrectAnswers/totalAnswers) * 100)
+                Score = score
             };
 
             _context.TestResults?.Add(newTestResults);
