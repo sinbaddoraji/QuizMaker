@@ -11,6 +11,7 @@ using TestMaker.Helpers.Implementation;
 using TestMaker.Models;
 using static System.Net.Mime.MediaTypeNames;
 using Test = TestMaker.Models.Test;
+using TestResults = TestMaker.Models.TestResults;
 
 namespace TestMaker.Controllers
 {
@@ -283,75 +284,84 @@ namespace TestMaker.Controllers
 
         public async Task<IActionResult> Share(Guid id)
         {
-            var Test = await _context.Test
-                .FirstOrDefaultAsync(m => m.TestId == id);
+            var test = await _context.Test.FindAsync(id);
+            if (test == null)
+            {
+                return NotFound();
+            }
 
-            //List<Question> questionList = new List<Question>();
-            //foreach (var question in Test.Questions.Split("\n"))
-            //{
-            //    //\"Question Name\" - *\"Option 1\" - \"Option 2\" - \"Option 3\"
-            //    var q = question.Split("-");
-            //    Question questionObject = new Question();
+            var testWrapper = new TestWrapper()
+            {
+                CreatedDate = test.CreatedDate,
+                Description = test.Description,
+                Name = test.Name,
+                TestId = test.TestId,
+                UserId = test.UserId,
+                Questions = new SafeJsonSerializer().Deserialize<List<Question>>(test.Questions)
+            };
 
-            //    questionObject.Content = q[0].Replace("\"", "").Trim(' ');
+            // Clear answer state of all questions 
+            for (var index = 0; index < testWrapper.Questions.Count; index++)
+            {
+                for (int j = 0; j < testWrapper.Questions[index].AnswersState.Count; j++)
+                {
+                    testWrapper.Questions[index].AnswersState[j] = false;
+                }
+            }
 
-            //    for (int i = 1; i < q.Length; i++)
-            //    {
-            //        var current = q[i].Replace("\"", "").Trim(' ');
-
-            //        current = current.Trim('*', ' ');
-            //        if (q[i].Trim(' ').StartsWith("*"))
-            //        {
-            //            questionObject.CorrectAnswerIndex = i - 1;
-            //        }
-
-            //        questionObject.Choices.Add(current);
-            //    }
-            //    questionList.Add(questionObject);
-            //}
-
-            //TestModel t = new TestModel()
-            //{
-            //    Tests = questionList,
-            //    id = Test.TestId,
-            //    TestName = Test.Name,
-            //    TestDescription = Test.Description
-            //};
-
-            return View();
+            return View(testWrapper);
         }
 
         [HttpPost]
-        public ActionResult SubmitScores(TestModel model)
+        public async Task<ActionResult> SubmitScores(TestWrapper testTaken)
         {
-            int totalQuestions = model.Tests.Count;
+            int totalAnswers = 0;
             int totalCorrectAnswers = 0;
 
-            //foreach (var question in model.Tests)
-            //{
-            //    if (question.SelectedIndex == question.CorrectAnswerIndex)
-            //    {
-            //        totalCorrectAnswers++;
-            //    }
-            //}
+            var test = await _context.Test.FindAsync(testTaken.TestId);
 
-            //float score = (float)totalCorrectAnswers / totalQuestions * 100;
+            var originalTest = new TestWrapper()
+            {
+                CreatedDate = test.CreatedDate,
+                Description = test.Description,
+                Name = test.Name,
+                TestId = test.TestId,
+                UserId = test.UserId,
+                Questions = new SafeJsonSerializer().Deserialize<List<Question>>(test.Questions)
+            };
 
-            //ViewBag.Score = score;
 
-            //var newTestResults = new TestResults
-            //{
-	           // UserId = User.Identity?.Name,
-	           // TestId = model.id,
-	           // TestName = model.TestName,
-	           // TestDescription = model.TestDescription,
-	           // Score = Convert.ToInt32(score)
-            //};
+            // Compare qustions `AnswersState` with original test `AnswersState`
+            for (var index = 0; index < testTaken.Questions.Count; index++)
+            {
+                for (int j = 0; j < testTaken.Questions[index].AnswersState.Count; j++)
+                {
+                    if (originalTest.Questions[index].AnswersState[j])
+                    {
+                        totalAnswers++;
+                        if (testTaken.Questions[index].AnswersState[j] == originalTest.Questions[index].AnswersState[j])
+                        {
+                            totalCorrectAnswers++;
+                        }
+                    }
+                    
+                }
+            }
+            
 
-            //_context.TestResults?.Add(newTestResults);
-            //_context.SaveChanges();
+            var newTestResults = new TestResults
+            {
+                UserId = User.Identity?.Name,
+                TestId = testTaken.TestId,
+                TestName = testTaken.Name,
+                TestDescription = testTaken.Description,
+                Score = Convert.ToInt32((totalCorrectAnswers/totalAnswers) * 100)
+            };
 
-			return RedirectToAction(nameof(Index), "TestResults");
+            _context.TestResults?.Add(newTestResults);
+            _context.SaveChanges();
+
+            return RedirectToAction(nameof(Index), "TestResults");
         }
 
     }

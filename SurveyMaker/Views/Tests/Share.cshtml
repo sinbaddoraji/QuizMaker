@@ -1,4 +1,4 @@
-﻿@model TestModel
+﻿@model TestWrapper
 
 @{
 	ViewBag.Title = "Test";
@@ -7,9 +7,9 @@
 
 
 <div class="card">
-@*
-    <h1>@Model.TestName</h1>
-    <p>@Model.TestDescription</p>
+
+    <h1>@Model.Name</h1>
+    <p>@Model.Description</p>
     <br/>
 
     @using (Html.BeginForm("SubmitScores", "Tests"))
@@ -17,46 +17,33 @@
         @Html.AntiForgeryToken()
 
 
-        @Html.HiddenFor(m => m.id)
+        @Html.HiddenFor(m => m.TestId)
 
-        @Html.HiddenFor(m => m.TestName)
-        @Html.HiddenFor(m => m.TestDescription)
+        @Html.HiddenFor(m => m.Name)
+        @Html.HiddenFor(m => m.Description)
 
-        for (var i = 0; i < Model.Tests.Count; i++)
+        for (var i = 0; i < Model.Questions.Count; i++)
         {
-            <h3>@Model.Tests[i].Content</h3>
+            <h3>@Model.Questions[i].QuestionContent</h3>
             <ul>
-                @for (var j = 0; j < Model.Tests[i].Choices.Count; j++)
+                @for (var j = 0; j < Model.Questions[i].AnswersState.Count; j++)
                 {
                     <li>
                         <label>
-                            @Html.RadioButtonFor(m => m.Tests[i].SelectedIndex, j, new { id = "question" + i + "choice" + j })
-                            @Model.Tests[i].Choices[j]
+                            <span>@Model.Questions[i].Answers[j]</span>
+
+                            <input type="checkbox" name="Questions[@i].AnswersState[@j]" class="form-check-input"
+                                   asp-for="@(Model.Questions[i].AnswersState[j])"/>
                         </label>
                     </li>
                 }
             </ul>
-            @Html.HiddenFor(m => m.Tests[i].QuestionId)
-            @Html.HiddenFor(m => m.Tests[i].Content)
-            @Html.HiddenFor(m => m.Tests[i].CorrectAnswerIndex)
-            @Html.HiddenFor(m => m.Tests[i].Choices)
+            @Html.HiddenFor(m => m.Questions[i].QuestionId)
+            @Html.HiddenFor(m => m.Questions[i].QuestionContent)
         }
 
         <button type="submit" class="btn theme-btn">Submit</button>
-    }*@
+    }
 
 </div>
 
-@section Scripts {
-	<script>
-        function updateSelectedIndexes() {
-            var selectedIndexes = [];
-            $('input[type=radio]:checked').each(function () {
-                var questionIndex = parseInt(this.name.replace("Tests[", "").replace("].SelectedIndex", ""));
-                var selectedIndex = parseInt(this.value);
-                selectedIndexes[questionIndex] = selectedIndex;
-            });
-            console.log("Updating selected indexes...");
-        }
-    </script>
-}
