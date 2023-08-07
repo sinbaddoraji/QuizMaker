@@ -9,6 +9,7 @@ using TestMaker.Data;
 using TestMaker.Data.Migrations;
 using TestMaker.Helpers.Implementation;
 using TestMaker.Models;
+using static System.Net.Mime.MediaTypeNames;
 using Test = TestMaker.Models.Test;
 
 namespace TestMaker.Controllers
@@ -80,28 +81,35 @@ namespace TestMaker.Controllers
             };
             return View(testWrapper);
         }
-
-        // POST: Tests/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
         {
-            if (id != Test.TestId)
-            {
-                return NotFound();
-            }
-
-
             var test = await _context.Test
-                .FirstOrDefaultAsync(m => m.TestId == id);
+                .FirstOrDefaultAsync(m => m.TestId == Test.TestId);
+
+            //Make sure that the questions have the same number of answer states as answers
+            for (int i = 0; i < Test.Questions.Count; i++)
+            {
+                if (Test.Questions[i].AnswersState == null)
+                {
+                    Test.Questions[i].AnswersState = Enumerable.Repeat(false, Test.Questions[i].Answers.Count).ToList();
+                }
+                else if (Test.Questions[i].AnswersState.Count < Test.Questions[i].Answers.Count)
+                {
+                    Test.Questions[i].AnswersState.AddRange(Enumerable.Repeat(false, Test.Questions[i].Answers.Count - Test.Questions[i].AnswersState.Count));
+                }
+            }
 
             var serializer = new SafeJsonSerializer();
 
             test.Name = Test.Name;
             test.Description = Test.Description;
             test.Questions = serializer.Serialize(Test.Questions);
+
+            
 
             if (ModelState.IsValid)
             {
@@ -133,42 +141,30 @@ namespace TestMaker.Controllers
         [HttpPost]
         public async Task<IActionResult> AddQuestion(Guid testId, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
         {
-            
-
-            if (ModelState.IsValid)
+            if (Test.Questions == null)
             {
-                try
-                {
-                    // Append the new question to the existing Questions property
-
-
-                    Test.Questions.Add(new Question()
-                    {
-                        Answers = new List<string>()
-                        {
-                            "Option1", "Option2", "Option3"
-                        },
-                        AnswersState = new List<bool>()
-                        {
-                            false, false, false
-                        },
-                        QuestionContent = "Question Name",
-                        QuestionId = Guid.NewGuid()
-                    });
-                    
-                    return RedirectToAction("Edit", "Tests", new { id = testId, Test });
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    // Handle the exception if necessary
-                }
+                Test.Questions = new List<Question>();
             }
-            
-            return RedirectToAction("Edit", "Tests", new { id = testId, Test });
+
+            Test.Questions.Add(new Question()
+            {
+                Answers = new List<string>()
+                {
+                    "Option1", "Option2", "Option3"
+                },
+                AnswersState = new List<bool>()
+                {
+                    false, false, false
+                },
+                QuestionContent = "Question Name",
+                QuestionId = Guid.NewGuid()
+            });
+
+            return View("Edit", Test);
         }
 
         [HttpPost]
-        public async Task<IActionResult> RemoveOption(Guid testId, int questionIndex, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
+        public async Task<IActionResult> RemoveOption(Guid testId, int questionIndex, int optionIndex, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
         {
 
 
@@ -178,9 +174,10 @@ namespace TestMaker.Controllers
                 {
                     // Append the new question to the existing Questions property
 
-                    Test.Questions.RemoveAt(questionIndex);
+                    Test.Questions[questionIndex].Answers.RemoveAt(optionIndex);
+                    Test.Questions[questionIndex].AnswersState.RemoveAt(optionIndex);
 
-                    return RedirectToAction("Edit", "Tests", new { id = testId, Test });
+                    return View("Edit", Test);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -188,7 +185,7 @@ namespace TestMaker.Controllers
                 }
             }
 
-            return RedirectToAction("Edit", "Tests", new { id = testId, Test });
+            return View("Edit", Test);
         }
 
         [HttpPost]
@@ -200,10 +197,10 @@ namespace TestMaker.Controllers
                 {
                     Test.Questions[questionIndex].Answers.Add("New Option");
                     Test.Questions[questionIndex].AnswersState.Add(false);
-                    
+
                     //await _context.SaveChangesAsync();
 
-                    return RedirectToAction("Edit", "Tests", new { id = testId });
+                    return View("Edit", Test);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -213,52 +210,33 @@ namespace TestMaker.Controllers
 
             return View("Edit", Test);
         }
-
-        [HttpPost]
-        public async Task<IActionResult> RemoveOption(Guid testId, int questionIndex, int optionIndex, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
-        {
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    Test.Questions[questionIndex].Answers.RemoveAt(optionIndex);
-                    Test.Questions[questionIndex].AnswersState.RemoveAt(optionIndex);
-                    
-                    await _context.SaveChangesAsync();
-
-                    return RedirectToAction("Edit", "Tests", new { id = testId });
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    // Handle the exception if necessary
-                }
-            }
-
-            return View("Edit", Test);
-        }
+        
 
         [HttpPost]
         public async Task<IActionResult> RemoveQuestion(Guid testId, int questionIndex, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
         {
-            if (ModelState.IsValid)
+            try
             {
-                try
-                {
-                    Test.Questions.RemoveAt(questionIndex);
-
-                    await _context.SaveChangesAsync();
-
-                    return RedirectToAction("Edit", "Tests", new { id = testId });
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    // Handle the exception if necessary
-                }
+                Test.Questions.RemoveAt(questionIndex);
+                
+            }
+            catch (DbUpdateConcurrencyException)
+            {
             }
 
             return View("Edit", Test);
         }
 
+        public async Task SaveTestWrapper(TestWrapper testWrapper)
+        {
+            var test = await _context.Test
+                .FirstOrDefaultAsync(m => m.TestId == testWrapper.TestId);
+
+            var serializer = new SafeJsonSerializer();
+            test.Questions = serializer.Serialize(testWrapper.Questions);
+
+            _context.Update(test);
+        }
 
 
         // GET: Tests/Delete/5

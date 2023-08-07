@@ -1,7 +1,4 @@
-﻿@using TestMaker.Data.Migrations
-@using Microsoft.AspNetCore.Mvc.TagHelpers
-@using TestMaker.Helpers.Interfaces
-@inject ISafeJsonSerializer serializer;
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model TestMaker.Models.TestWrapper
 
 @{
@@ -64,7 +61,9 @@
                                     </div>
                                     <div class="col-sm-1">
                                         <div class="form-check">
-                                            <input type="checkbox" name="Questions[@questionIndex].AnswersState[@answerIndex]" class="form-check-input" checked="@Model.Questions[questionIndex].AnswersState[answerIndex]"/>
+                                            <input type="checkbox" name="Questions[@questionIndex].AnswersState[@answerIndex]" class="form-check-input" 
+                                                   asp-for="@(Model.Questions[questionIndex].AnswersState[answerIndex])" />
+
                                             <label class="form-check-label" for="gridCheck1">Correct?</label>
                                         </div>
                                     </div>
