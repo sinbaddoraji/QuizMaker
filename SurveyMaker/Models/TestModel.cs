@@ -3,7 +3,7 @@
 	public class TestModel
 	{
 		public Guid id { get; set; }
-		public List<TestMaker.Models.QuestionModel> Tests { get; set; } = new List<TestMaker.Models.QuestionModel>();
+		public List<TestMaker.Models.Question> Tests { get; set; } = new();
 		public string? TestDescription { get; set; }
 		public string? TestName { get; set; }
 	}

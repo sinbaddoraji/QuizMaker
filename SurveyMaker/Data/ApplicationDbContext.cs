@@ -10,6 +10,8 @@ namespace TestMaker.Data
             : base(options)
         {
         }
+        
+
         public DbSet<TestMaker.Models.Test>? Test { get; set; }
 
         public DbSet<TestMaker.Models.TestResults>? TestResults { get; set; }

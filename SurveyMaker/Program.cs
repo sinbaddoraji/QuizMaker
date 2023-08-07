@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TestMaker.Data;
+using TestMaker.Helpers.Implementation;
+using TestMaker.Helpers.Interfaces;
 
 namespace TestMaker
 {
@@ -19,6 +21,8 @@ namespace TestMaker
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddControllersWithViews();
+
+            builder.Services.AddTransient<ISafeJsonSerializer, SafeJsonSerializer>();
 
             var app = builder.Build();
 

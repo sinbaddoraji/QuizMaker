@@ -6,7 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TestMaker.Data;
+using TestMaker.Data.Migrations;
+using TestMaker.Helpers.Implementation;
 using TestMaker.Models;
+using static System.Net.Mime.MediaTypeNames;
+using Test = TestMaker.Models.Test;
+using TestResults = TestMaker.Models.TestResults;
 
 namespace TestMaker.Controllers
 {
@@ -47,7 +52,17 @@ namespace TestMaker.Controllers
                 Test.UserId = User.Identity.Name;
                 _context.Add(Test);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+                var testWrapper = new TestWrapper()
+                {
+                    CreatedDate = Test.CreatedDate,
+                    Description = Test.Description,
+                    Name = Test.Name,
+                    TestId = Test.TestId,
+                    UserId = Test.UserId,
+                    Questions = new SafeJsonSerializer().Deserialize<List<Question>>(Test.Questions)
+                };
+                return View("Edit", testWrapper);
             }
             return View(Test);
         }
@@ -60,32 +75,65 @@ namespace TestMaker.Controllers
                 return NotFound();
             }
 
-            var Test = await _context.Test.FindAsync(id);
-            if (Test == null)
+            var test = await _context.Test.FindAsync(id);
+            if (test == null)
             {
                 return NotFound();
             }
-            return View(Test);
-        }
 
-        // POST: Tests/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+            var testWrapper = new TestWrapper()
+            {
+                CreatedDate = test.CreatedDate,
+                Description = test.Description,
+                Name = test.Name,
+                TestId = test.TestId,
+                UserId = test.UserId,
+                Questions = new SafeJsonSerializer().Deserialize<List<Question>>(test.Questions)
+            };
+            return View(testWrapper);
+        }
+        
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] Test Test)
+        public async Task<IActionResult> Edit(Guid id, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
         {
-            if (id != Test.TestId)
+            var test = await _context.Test
+                .FirstOrDefaultAsync(m => m.TestId == Test.TestId);
+
+            //Make sure that the questions have the same number of answer states as answers
+            if (Test.Questions == null)
             {
-                return NotFound();
+                Test.Questions = new List<Question>();
             }
+
+            for (int i = 0; i < Test.Questions.Count; i++)
+            {
+                if (Test.Questions[i].AnswersState == null)
+                {
+                    Test.Questions[i].AnswersState = Enumerable.Repeat(false, Test.Questions[i].Answers.Count).ToList();
+                }
+                else if (Test.Questions[i].AnswersState.Count < Test.Questions[i].Answers.Count)
+                {
+                    Test.Questions[i].AnswersState.AddRange(Enumerable.Repeat(false, Test.Questions[i].Answers.Count - Test.Questions[i].AnswersState.Count));
+                }
+            }
+
+            var serializer = new SafeJsonSerializer();
+
+            test.Name = Test.Name;
+            test.Description = Test.Description;
+            test.Questions = serializer.Serialize(Test.Questions);
+
+            
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    Test.UserId = User.Identity.Name;
-                    _context.Update(Test);
+                    // tRY MANUALLY GETTING THE QUESTIONS FROM THE FORM
+
+                    _context.Update(test);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -101,8 +149,111 @@ namespace TestMaker.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            
+
             return View(Test);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AddQuestion(Guid testId, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
+        {
+            if (Test.Questions == null)
+            {
+                Test.Questions = new List<Question>();
+            }
+
+            Test.Questions.Add(new Question()
+            {
+                Answers = new List<string>()
+                {
+                    "Option1", "Option2", "Option3"
+                },
+                AnswersState = new List<bool>()
+                {
+                    false, false, false
+                },
+                QuestionContent = "Question Name",
+                QuestionId = Guid.NewGuid()
+            });
+
+            return View("Edit", Test);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveOption(Guid testId, int questionIndex, int optionIndex, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
+        {
+
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Append the new question to the existing Questions property
+
+                    Test.Questions[questionIndex].Answers.RemoveAt(optionIndex);
+                    Test.Questions[questionIndex].AnswersState.RemoveAt(optionIndex);
+
+                    return View("Edit", Test);
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    // Handle the exception if necessary
+                }
+            }
+
+            return View("Edit", Test);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddOption(Guid testId, int questionIndex, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    Test.Questions[questionIndex].Answers.Add("New Option");
+                    Test.Questions[questionIndex].AnswersState.Add(false);
+
+                    //await _context.SaveChangesAsync();
+
+                    return View("Edit", Test);
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    // Handle the exception if necessary
+                }
+            }
+
+            return View("Edit", Test);
+        }
+        
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveQuestion(Guid testId, int questionIndex, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
+        {
+            try
+            {
+                Test.Questions.RemoveAt(questionIndex);
+                
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+            }
+
+            return View("Edit", Test);
+        }
+
+        public async Task SaveTestWrapper(TestWrapper testWrapper)
+        {
+            var test = await _context.Test
+                .FirstOrDefaultAsync(m => m.TestId == testWrapper.TestId);
+
+            var serializer = new SafeJsonSerializer();
+            test.Questions = serializer.Serialize(testWrapper.Questions);
+
+            _context.Update(test);
+        }
+
 
         // GET: Tests/Delete/5
         public async Task<IActionResult> Delete(Guid? id)
@@ -148,75 +299,84 @@ namespace TestMaker.Controllers
 
         public async Task<IActionResult> Share(Guid id)
         {
-	        var Test = await _context.Test
-		        .FirstOrDefaultAsync(m => m.TestId == id);
-
-	        List<QuestionModel> questionList = new List<QuestionModel>();
-	        foreach (var question in Test.Questions.Split("\n"))
-	        {
-				//\"Question Name\" - *\"Option 1\" - \"Option 2\" - \"Option 3\"
-				var q = question.Split("-");
-				QuestionModel questionObject = new QuestionModel();
-
-				questionObject.Content = q[0].Replace("\"", "").Trim(' ');
-
-				for (int i = 1; i < q.Length; i++)
-				{
-					var current = q[i].Replace("\"", "").Trim(' ');
-                    
-					current = current.Trim('*', ' ');
-					if (q[i].Trim(' ').StartsWith("*"))
-                    {
-                        questionObject.CorrectAnswerIndex = i - 1;
-                    }
-
-					questionObject.Choices.Add(current);
-				}
-				questionList.Add(questionObject);
-			}
-
-	        TestModel t = new TestModel()
-	        {
-		        Tests = questionList,
-		        id = Test.TestId,
-                TestName = Test.Name,
-                TestDescription = Test.Description
-	        };
-
-			return View(t);
-        }
-
-        [HttpPost]
-        public ActionResult SubmitScores(TestModel model)
-        {
-            int totalQuestions = model.Tests.Count;
-            int totalCorrectAnswers = 0;
-
-            foreach (var question in model.Tests)
+            var test = await _context.Test.FindAsync(id);
+            if (test == null)
             {
-                if (question.SelectedIndex == question.CorrectAnswerIndex)
+                return NotFound();
+            }
+
+            var testWrapper = new TestWrapper()
+            {
+                CreatedDate = test.CreatedDate,
+                Description = test.Description,
+                Name = test.Name,
+                TestId = test.TestId,
+                UserId = test.UserId,
+                Questions = new SafeJsonSerializer().Deserialize<List<Question>>(test.Questions)
+            };
+
+            // Clear answer state of all questions 
+            for (var index = 0; index < testWrapper.Questions.Count; index++)
+            {
+                for (int j = 0; j < testWrapper.Questions[index].AnswersState.Count; j++)
                 {
-                    totalCorrectAnswers++;
+                    testWrapper.Questions[index].AnswersState[j] = false;
                 }
             }
 
-            float score = (float)totalCorrectAnswers / totalQuestions * 100;
+            return View(testWrapper);
+        }
 
-            ViewBag.Score = score;
+        [HttpPost]
+        public async Task<ActionResult> SubmitScores(TestWrapper testTaken)
+        {
+            int totalAnswers = 0;
+            int totalCorrectAnswers = 0;
 
+            var test = await _context.Test.FindAsync(testTaken.TestId);
+
+            var originalTest = new TestWrapper()
+            {
+                CreatedDate = test.CreatedDate,
+                Description = test.Description,
+                Name = test.Name,
+                TestId = test.TestId,
+                UserId = test.UserId,
+                Questions = new SafeJsonSerializer().Deserialize<List<Question>>(test.Questions)
+            };
+
+
+            // Compare qustions `AnswersState` with original test `AnswersState`
+            for (var index = 0; index < testTaken.Questions.Count; index++)
+            {
+                for (int j = 0; j < testTaken.Questions[index].AnswersState.Count; j++)
+                {
+                    if (originalTest.Questions[index].AnswersState[j])
+                    {
+                        totalAnswers++;
+                        if (testTaken.Questions[index].AnswersState[j] == originalTest.Questions[index].AnswersState[j])
+                        {
+                            totalCorrectAnswers++;
+                        }
+                    }
+                    
+                }
+            }
+            
+            int score = (int)((double)((double)totalCorrectAnswers / (double)totalAnswers) * 100.00);
             var newTestResults = new TestResults
             {
-	            UserId = User.Identity?.Name,
-	            TestId = model.id,
-	            TestName = model.TestName,
-	            TestDescription = model.TestDescription,
-	            Score = Convert.ToInt32(score)
+                UserId = User.Identity?.Name,
+                TestId = testTaken.TestId,
+                TestName = testTaken.Name,
+                TestDescription = testTaken.Description,
+                Score = score
             };
 
             _context.TestResults?.Add(newTestResults);
             _context.SaveChanges();
 
-			return RedirectToAction(nameof(Index), "TestResults");
+            return RedirectToAction(nameof(Index), "TestResults");
         }
 
     }

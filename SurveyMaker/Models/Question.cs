@@ -1,12 +1,20 @@
-﻿namespace TestMaker.Models;
+﻿using System.Collections;
+using System.ComponentModel.DataAnnotations;
 
-public class QuestionModel
+namespace TestMaker.Models
 {
-	public Guid QuestionId { get; set; } = Guid.NewGuid();
-	public string? Content { get; set; }
-	public int CorrectAnswerIndex { get; set; }
+    public class Question
+    {
+        [Key]
+        public Guid QuestionId { get; set; }
 
-	public List<string> Choices { get; set; } = new List<string>();
+        public string QuestionContent { get; set; }
 
-	public int SelectedIndex {get; set; }
+        public List<string> Answers { get; set; }
+
+        public bool IsMultipleChoice { get; set; }
+
+        public List<bool> AnswersState { get; set; }
+    }
+
 }
