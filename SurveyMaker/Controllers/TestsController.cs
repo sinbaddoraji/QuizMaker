@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TestMaker.Data;
-using TestMaker.Data.Migrations;
 using TestMaker.Helpers.Implementation;
 using TestMaker.Models;
-using static System.Net.Mime.MediaTypeNames;
 using Test = TestMaker.Models.Test;
 using TestResults = TestMaker.Models.TestResults;
 
@@ -44,27 +37,26 @@ namespace TestMaker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] Test Test)
+        public async Task<IActionResult> Create([Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] Test test)
         {
-            if (ModelState.IsValid)
-            {
-                Test.TestId = Guid.NewGuid();
-                Test.UserId = User.Identity.Name;
-                _context.Add(Test);
-                await _context.SaveChangesAsync();
+            if (!ModelState.IsValid) 
+                return View(test);
 
-                var testWrapper = new TestWrapper()
-                {
-                    CreatedDate = Test.CreatedDate,
-                    Description = Test.Description,
-                    Name = Test.Name,
-                    TestId = Test.TestId,
-                    UserId = Test.UserId,
-                    Questions = new SafeJsonSerializer().Deserialize<List<Question>>(Test.Questions)
-                };
-                return View("Edit", testWrapper);
-            }
-            return View(Test);
+            test.TestId = Guid.NewGuid();
+            test.UserId = User.Identity.Name;
+            _context.Add(test);
+            await _context.SaveChangesAsync();
+
+            var testWrapper = new TestWrapper()
+            {
+                CreatedDate = test.CreatedDate,
+                Description = test.Description,
+                Name = test.Name,
+                TestId = test.TestId,
+                UserId = test.UserId,
+                Questions = new SafeJsonSerializer().Deserialize<List<Question>>(test.Questions)
+            };
+            return View("Edit", testWrapper);
         }
 
         // GET: Tests/Edit/5
@@ -96,66 +88,46 @@ namespace TestMaker.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
+        public async Task<IActionResult> Edit(Guid id, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper testWrapper)
         {
             var test = await _context.Test
-                .FirstOrDefaultAsync(m => m.TestId == Test.TestId);
+                .FirstOrDefaultAsync(m => m.TestId == testWrapper.TestId);
 
             //Make sure that the questions have the same number of answer states as answers
-            if (Test.Questions == null)
-            {
-                Test.Questions = new List<Question>();
-            }
+            testWrapper.Questions ??= new List<Question>();
 
-            for (int i = 0; i < Test.Questions.Count; i++)
+            for (int i = 0; i < testWrapper.Questions.Count; i++)
             {
-                if (Test.Questions[i].AnswersState == null)
+                if (testWrapper.Questions[i].AnswersState == null)
                 {
-                    Test.Questions[i].AnswersState = Enumerable.Repeat(false, Test.Questions[i].Answers.Count).ToList();
+                    testWrapper.Questions[i].AnswersState = Enumerable.Repeat(false, testWrapper.Questions[i].Answers.Count).ToList();
                 }
-                else if (Test.Questions[i].AnswersState.Count < Test.Questions[i].Answers.Count)
+                else if (testWrapper.Questions[i].AnswersState.Count < testWrapper.Questions[i].Answers.Count)
                 {
-                    Test.Questions[i].AnswersState.AddRange(Enumerable.Repeat(false, Test.Questions[i].Answers.Count - Test.Questions[i].AnswersState.Count));
+                    testWrapper.Questions[i].AnswersState.AddRange(Enumerable.Repeat(false, testWrapper.Questions[i].Answers.Count - testWrapper.Questions[i].AnswersState.Count));
                 }
             }
 
             var serializer = new SafeJsonSerializer();
 
-            test.Name = Test.Name;
-            test.Description = Test.Description;
-            test.Questions = serializer.Serialize(Test.Questions);
-
+            test.Name = testWrapper.Name;
+            test.Description = testWrapper.Description;
+            test.Questions = serializer.Serialize(testWrapper.Questions);
             
-
-            if (ModelState.IsValid)
+            try
             {
-                try
-                {
-                    // tRY MANUALLY GETTING THE QUESTIONS FROM THE FORM
-
-                    _context.Update(test);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TestExists(Test.TestId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                _context.Update(test);
+                await _context.SaveChangesAsync();
             }
-            
-
-            return View(Test);
+            catch (DbUpdateConcurrencyException)
+            {
+               
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddQuestion(Guid testId, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
+        public Task<IActionResult> AddQuestion(Guid testId, [Bind("TestId,Name,Description,UserId,CreatedDate,Questions")] TestWrapper Test)
         {
             if (Test.Questions == null)
             {
@@ -176,7 +148,7 @@ namespace TestMaker.Controllers
                 QuestionId = Guid.NewGuid()
             });
 
-            return View("Edit", Test);
+            return Task.FromResult<IActionResult>(View("Edit", Test));
         }
 
         [HttpPost]

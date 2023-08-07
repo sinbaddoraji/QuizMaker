@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TestMaker.Data;
-using TestMaker.Models;
 
 namespace TestMaker.Controllers
 {
@@ -23,30 +17,10 @@ namespace TestMaker.Controllers
         public async Task<IActionResult> Index()
         {
             return _context.TestResults != null ?
-                        View((await _context.TestResults.ToListAsync()).Where(x => x.UserId ==  User.Identity.Name)) :
+                        View((await _context.TestResults.ToListAsync()).Where(x => x.UserId ==  User.Identity?.Name)) :
                         Problem("Entity set 'ApplicationDbContext.TestResults'  is null.");
         }
-
-        // GET: TestResults/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null || _context.TestResults == null)
-            {
-                return NotFound();
-            }
-
-            var testResults = await _context.TestResults
-                .FirstOrDefaultAsync(m => m.Id == id && m.UserId == User.Identity.Name);
-            if (testResults == null)
-            {
-                return NotFound();
-            }
-
-            return View(testResults);
-        }
         
-        
-
         // POST: TestResults/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -65,10 +39,6 @@ namespace TestMaker.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
-        private bool TestResultsExists(int id)
-        {
-            return (_context.TestResults?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
+        
     }
 }

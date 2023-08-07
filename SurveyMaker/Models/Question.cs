@@ -12,8 +12,6 @@ namespace TestMaker.Models
 
         public List<string> Answers { get; set; }
 
-        public bool IsMultipleChoice { get; set; }
-
         public List<bool> AnswersState { get; set; }
     }
 
